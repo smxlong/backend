@@ -1,10 +1,12 @@
 package backend
 
 import (
+	"context"
 	"net/http"
 	"reflect"
 
 	"github.com/gin-gonic/gin"
+	"github.com/smxlong/kit/webserver"
 )
 
 // Router routes requests to endpoints
@@ -77,4 +79,18 @@ func (r *Router) HEAD(path string, handler interface{}) {
 // ServeHTTP implements the http.Handler interface
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.g.ServeHTTP(w, req)
+}
+
+// RunContext runs the router on the given address until the context is done
+func (r *Router) RunContext(ctx context.Context, addr string) error {
+	return webserver.ListenAndServe(ctx, &http.Server{
+		Addr:    addr,
+		Handler: r,
+	})
+}
+
+// Run runs the router on the given address. Use RunContext if you need to shut
+// down the server gracefully.
+func (r *Router) Run(addr string) error {
+	return r.RunContext(context.Background(), addr)
 }
